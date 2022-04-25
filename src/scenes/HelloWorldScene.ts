@@ -30,6 +30,8 @@ export default class HelloWorldScene extends Phaser.Scene {
     player.setBounce(0.3);
     player.setCollideWorldBounds(true);
 
+    this.physics.add.collider(player, platforms)
+
     // Player sprite animation
     this.anims.create({
       key: 'left',
