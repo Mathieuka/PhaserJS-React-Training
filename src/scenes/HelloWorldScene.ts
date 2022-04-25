@@ -1,9 +1,12 @@
 import Phaser from 'phaser'
 
+let player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
+
 export default class HelloWorldScene extends Phaser.Scene {
   constructor() {
     super('helloworld')
   }
+
 
   preload() {
     this.load.image('sky', 'assets/sky.png');
@@ -26,9 +29,10 @@ export default class HelloWorldScene extends Phaser.Scene {
     platforms.create(750, 220, 'ground');
 
     // Player sprite
-    const player = this.physics.add.sprite(100, 450, 'dude');
+    player = this.physics.add.sprite(100, 450, 'dude');
     player.setBounce(0.3);
     player.setCollideWorldBounds(true);
+
 
     this.physics.add.collider(player, platforms)
 
@@ -52,6 +56,25 @@ export default class HelloWorldScene extends Phaser.Scene {
       frameRate: 10,
       repeat: -1,
     });
+  }
+
+  update(time: number, delta: number) {
+    super.update(time, delta);
+    const cursors = this.input.keyboard.createCursorKeys();
+    if (cursors.left.isDown) {
+      player.setVelocityX(-160);
+      player.anims.play('left', true);
+    } else if (cursors.right.isDown) {
+      player.setVelocityX(160);
+      player.anims.play('right', true);
+    } else {
+      player.setVelocityX(0);
+      player.anims.play('turn');
+    }
+
+    if (cursors.up.isDown && player.body.touching.down) {
+      player.setVelocityY(-390);
+    }
   }
 
 }
