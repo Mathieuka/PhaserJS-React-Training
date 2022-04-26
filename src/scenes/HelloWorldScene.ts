@@ -1,4 +1,6 @@
 import Phaser from 'phaser'
+import GameObject = Phaser.GameObjects.GameObject;
+import Sprite = Phaser.Physics.Arcade.Sprite;
 
 let player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
 
@@ -6,7 +8,6 @@ export default class HelloWorldScene extends Phaser.Scene {
   constructor() {
     super('helloworld')
   }
-
 
   preload() {
     this.load.image('sky', 'assets/sky.png');
@@ -20,23 +21,40 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   create() {
-    // Static group
+    // Background image
     this.add.image(400, 300, 'sky');
+
+    // Static platforms group
     const platforms = this.physics.add.staticGroup();
     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
     platforms.create(600, 400, 'ground');
     platforms.create(50, 250, 'ground');
     platforms.create(750, 220, 'ground');
 
+    // Static Stars group
+    const stars = this.physics.add.group({
+      key: 'star',
+      repeat: 11,
+      setXY: { x: 12, y: 0, stepX: 70 }
+    });
+    stars.children.iterate(function (child: GameObject) {
+      (child as (GameObject & Sprite)).setBounceY(Phaser.Math.FloatBetween(0.2, 0.5))
+    });
+
+    this.physics.add.collider(platforms, stars)
+
+    const collectStar =  (player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, star: GameObject & Sprite) => {
+      star.disableBody(true, true);
+    }
+
+    this.physics.add.overlap(player, stars, collectStar as any, undefined, this);
+
     // Player sprite
     player = this.physics.add.sprite(100, 450, 'dude');
     player.setBounce(0.3);
     player.setCollideWorldBounds(true);
+    this.physics.add.collider(platforms, player)
 
-
-    this.physics.add.collider(player, platforms)
-
-    // Player sprite animation
     this.anims.create({
       key: 'left',
       frames: this.anims.generateFrameNumbers('dude', { start: 0, end: 3 }),
