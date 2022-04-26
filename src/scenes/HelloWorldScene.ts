@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import GameObject = Phaser.GameObjects.GameObject;
 import Sprite = Phaser.Physics.Arcade.Sprite;
+import phaserGame from "../PhaserGame";
 
 let player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody
 
@@ -40,6 +41,20 @@ const createPlayer = (this_: any, platforms: any) => {
   });
 }
 
+const onCollectStar = (this_: any) => {
+  const scene = phaserGame.scene.keys.helloworld as HelloWorldScene
+  let scoreText: any
+  scoreText = this_.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' } as any);
+
+  return (player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, star: GameObject & Sprite) => {
+    const prevScore = scene.cache.custom.Data.get('score').score;
+    scene.cache.custom.Data.add('score', { score: prevScore + 10 })
+    const newScore = scene.cache.custom.Data.get('score').score
+    scoreText.setText('Score: ' + newScore);
+    star.disableBody(true, true);
+  }
+}
+
 const createStars = (this_: any, platforms: any) => {
   const stars = this_.physics.add.group({
     key: 'star',
@@ -51,12 +66,7 @@ const createStars = (this_: any, platforms: any) => {
   });
 
   this_.physics.add.collider(platforms, stars)
-
-  const collectStar =  (player:  Phaser.Types.Physics.Arcade.SpriteWithDynamicBody, star: GameObject & Sprite) => {
-    star.disableBody(true, true);
-  }
-
-  this_.physics.add.overlap(player, stars, collectStar as any, undefined, this);
+  this_.physics.add.overlap(player, stars, onCollectStar(this_), undefined, this);
 }
 
 export default class HelloWorldScene extends Phaser.Scene {
@@ -76,9 +86,12 @@ export default class HelloWorldScene extends Phaser.Scene {
   }
 
   create() {
+    const scene = phaserGame.scene.keys.helloworld as HelloWorldScene
+    const scoreCache = scene.cache.addCustom('Data')
+    scoreCache.add('score', {score: 0})
+
     // Background image
     this.add.image(400, 300, 'sky');
-
     // Static platforms group
     const platforms = createPlatforms(this)
 
@@ -107,5 +120,4 @@ export default class HelloWorldScene extends Phaser.Scene {
       player.setVelocityY(-390);
     }
   }
-
 }
