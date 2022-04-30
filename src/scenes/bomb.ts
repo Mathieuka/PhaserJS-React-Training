@@ -1,6 +1,18 @@
 import Phaser from "phaser";
 
-function hitBomb(this_: any, player: any, bomb: any) {
+export const createBomb = (player: any, bombs: any) => {
+  const bombPosition =
+    player.x < 400
+      ? Phaser.Math.Between(400, 800)
+      : Phaser.Math.Between(0, 400);
+
+  const bomb = bombs.create(bombPosition, 16, "bomb");
+  bomb.setBounce(1);
+  bomb.setCollideWorldBounds(true);
+  bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
+};
+
+export function hitBomb(this_: any, player: any) {
   this_.physics.pause();
 
   player.setTint(0xff0000);
@@ -10,24 +22,4 @@ function hitBomb(this_: any, player: any, bomb: any) {
   // gameOver = true;
 }
 
-export const createBombs = (this_: any, player: any, platforms: any) => {
-  let bombs = this_.physics.add.group();
-  this_.physics.add.collider(bombs, platforms);
-  let x =
-    player.x < 400
-      ? Phaser.Math.Between(400, 800)
-      : Phaser.Math.Between(0, 400);
-
-  const bomb = bombs.create(x, 16, "bomb");
-  bomb.setBounce(1);
-  bomb.setCollideWorldBounds(true);
-  bomb.setVelocity(Phaser.Math.Between(-200, 200), 20);
-
-  this_.physics.add.collider(
-    player,
-    bombs,
-    () => hitBomb(this_, player, bomb),
-    undefined,
-    this_
-  );
-};
+export const createBombs = (this_: any) => this_.physics.add.group();
