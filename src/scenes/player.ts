@@ -1,11 +1,27 @@
 import Phaser from "phaser";
 
-export const createPlayer = (this_: any, platforms: any) => {
+export const playerMovement = (player: any, cursors: any) => {
+  if (cursors.left.isDown) {
+    player.setVelocityX(-160);
+    player.anims.play("left", true);
+  } else if (cursors.right.isDown) {
+    player.setVelocityX(160);
+    player.anims.play("right", true);
+  } else {
+    player.setVelocityX(0);
+    player.anims.play("turn");
+  }
+
+  if (cursors.up.isDown && player.body.touching.down) {
+    player.setVelocityY(-390);
+  }
+};
+
+export const createPlayer = (this_: any) => {
   let player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
   player = this_.physics.add.sprite(100, 450, "dude");
   player.setBounce(0.3);
   player.setCollideWorldBounds(true);
-  this_.physics.add.collider(platforms, player);
 
   this_.anims.create({
     key: "left",

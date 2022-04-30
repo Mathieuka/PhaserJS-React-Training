@@ -1,11 +1,14 @@
 import Phaser from "phaser";
 import { createPlatforms } from "./platform";
-import { createPlayer } from "./player";
+import { createPlayer, playerMovement } from "./player";
 import { createStars } from "./stars";
-
-let player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+import { createScore, scoreSubscription } from "./hooks/updateScore";
+import { onCollectStart } from "./stars";
 
 export default class HelloWorldScene extends Phaser.Scene {
+  private player: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody | undefined;
+  public cursors: any;
+
   constructor() {
     super("helloworld");
   }
@@ -19,31 +22,31 @@ export default class HelloWorldScene extends Phaser.Scene {
       frameWidth: 32,
       frameHeight: 48,
     });
+    this.cursors = this.input.keyboard.createCursorKeys();
   }
 
   create() {
     this.add.image(400, 300, "sky");
+    this.player = createPlayer(this);
     const platforms = createPlatforms(this);
-    player = createPlayer(this, platforms);
-    createStars(this, player, platforms);
+    const stars = createStars(this);
+    const scoreText = createScore(this);
+
+    scoreSubscription(scoreText);
+
+    this.physics.add.collider(platforms, this.player);
+    this.physics.add.collider(platforms, stars);
+    this.physics.add.overlap(
+      this.player,
+      stars,
+      (player: any, star: any) => onCollectStart(player, star, stars),
+      undefined,
+      this
+    );
   }
 
   update(time: number, delta: number) {
     super.update(time, delta);
-    const cursors = this.input.keyboard.createCursorKeys();
-    if (cursors.left.isDown) {
-      player.setVelocityX(-160);
-      player.anims.play("left", true);
-    } else if (cursors.right.isDown) {
-      player.setVelocityX(160);
-      player.anims.play("right", true);
-    } else {
-      player.setVelocityX(0);
-      player.anims.play("turn");
-    }
-
-    if (cursors.up.isDown && player.body.touching.down) {
-      player.setVelocityY(-390);
-    }
+    playerMovement(this.player, this.cursors);
   }
 }
